@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
@@ -7,11 +7,15 @@ import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { ArrowRight, ArrowLeft, Download, Plus, Trash2, FileText } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Download, Plus, Trash2, FileText, Save } from 'lucide-react';
 import { sampleResume, resumeTemplates } from '../mockData';
 import ResumePreview from '../components/ResumePreview';
 import { useToast } from '../hooks/use-toast';
 import { Toaster } from '../components/ui/toaster';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const ResumeBuilder = () => {
   const navigate = useNavigate();
@@ -26,6 +30,8 @@ const ResumeBuilder = () => {
     selectedTemplate: initialTemplateId
   });
   
+  const [resumeId, setResumeId] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [currentTab, setCurrentTab] = useState('personal');
 
   const handlePersonalInfoChange = (field, value) => {
