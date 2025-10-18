@@ -294,13 +294,33 @@ const ResumeBuilder = () => {
                 <span className="text-xl font-bold">بناء السيرة الذاتية</span>
               </div>
             </div>
-            <Button
-              onClick={handleExportPDF}
-              className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
-            >
-              <Download className="ml-2 w-4 h-4" />
-              تحميل PDF
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleSave}
+                disabled={isSaving}
+                variant="outline"
+                className="border-purple-600 text-purple-600 hover:bg-purple-50"
+              >
+                {isSaving ? (
+                  <>
+                    <Save className="ml-2 w-4 h-4 animate-spin" />
+                    جاري الحفظ...
+                  </>
+                ) : (
+                  <>
+                    <Save className="ml-2 w-4 h-4" />
+                    حفظ
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={handleExportPDF}
+                className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
+              >
+                <Download className="ml-2 w-4 h-4" />
+                تحميل PDF
+              </Button>
+            </div>
           </div>
         </div>
       </header>
