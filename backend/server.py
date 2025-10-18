@@ -39,7 +39,7 @@ async def create_resume(resume_data: ResumeCreate):
     """Create a new resume"""
     try:
         resume = Resume(**resume_data.dict())
-        result = await db.resumes.insert_one(resume.dict())
+        await db.resumes.insert_one(resume.dict())
         return ResumeResponse(id=resume.id, message="Resume saved successfully")
     except Exception as e:
         logging.error(f"Error creating resume: {str(e)}")
