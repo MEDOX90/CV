@@ -173,19 +173,95 @@ const ResumeBuilder = () => {
   };
 
   const handleExportPDF = async () => {
-    toast({
-      title: "جاري تصدير السيرة الذاتية",
-      description: "سيتم تحميل الملف قريباً...",
-    });
-    
-    // Save to backend and generate PDF
-    setTimeout(() => {
+    try {
+      toast({
+        title: "جاري تصدير السيرة الذاتية",
+        description: "يرجى الانتظار...",
+      });
+      
+      // Save first if not saved
+      let currentResumeId = resumeId;
+      if (!currentResumeId) {
+        const saveResponse = await axios.post(`${API}/resume`, resumeData);
+        currentResumeId = saveResponse.data.id;
+        setResumeId(currentResumeId);
+      }
+      
+      // Export PDF
+      const response = await axios.post(
+        `${API}/resume/${currentResumeId}/export-pdf`,
+        {},
+        { responseType: 'blob' }
+      );
+      
+      // Download file
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `resume_${currentResumeId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
       toast({
         title: "تم التصدير بنجاح!",
         description: "تم تحميل سيرتك الذاتية بصيغة PDF",
       });
-    }, 2000);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      toast({
+        title: "خطأ في التصدير",
+        description: "حدث خطأ أثناء تصدير السيرة الذاتية. يرجى المحاولة مرة أخرى.",
+        variant: "destructive"
+      });
+    }
   };
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      
+      if (resumeId) {
+        // Update existing resume
+        await axios.put(`${API}/resume/${resumeId}`, resumeData);
+        toast({
+          title: "تم الحفظ بنجاح",
+          description: "تم تحديث سيرتك الذاتية",
+        });
+      } else {
+        // Create new resume
+        const response = await axios.post(`${API}/resume`, resumeData);
+        setResumeId(response.data.id);
+        toast({
+          title: "تم الحفظ بنجاح",
+          description: "تم حفظ سيرتك الذاتية",
+        });
+      }
+    } catch (error) {
+      console.error('Error saving resume:', error);
+      toast({
+        title: "خطأ في الحفظ",
+        description: "حدث خطأ أثناء حفظ السيرة الذاتية. يرجى المحاولة مرة أخرى.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Auto-save effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (resumeId) {
+        // Silent auto-save
+        axios.put(`${API}/resume/${resumeId}`, resumeData).catch(err => {
+          console.error('Auto-save failed:', err);
+        });
+      }
+    }, 3000); // Auto-save after 3 seconds of no changes
+    
+    return () => clearTimeout(timer);
+  }, [resumeData, resumeId]);
 
   const tabSteps = [
     { id: 'personal', label: 'المعلومات الشخصية' },
